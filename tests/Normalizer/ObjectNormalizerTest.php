@@ -80,6 +80,18 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     */
+    public function shouldReturnObjectWithNullProps()
+    {
+        $normalizer = $this->createNormalizer();
+
+        $expected = $normalizer->denormalize([], Product::class);
+        $this->assertInstanceOf(Buzz::class, $expected->buzz);
+        $this->assertNull($expected->buzz->name);
+    }
+
+    /**
+     * @test
      * @expectedException \Sergiors\Mapping\Normalizer\ClassDoesNotExistException
      */
     public function shouldThrowClassDoesNotExistException()

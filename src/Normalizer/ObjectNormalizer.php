@@ -6,6 +6,7 @@ use Doctrine\Instantiator\Instantiator;
 use Sergiors\Mapping\Configuration\Metadata\ClassMetadataFactoryInterface;
 use Sergiors\Mapping\Configuration\Metadata\PropertyInfoInterface;
 use Sergiors\Mapping\Configuration\Annotation\Collection;
+use Sergiors\Functional as F;
 
 /**
  * @author Sérgio Rafael Siqueira <sergio@inbep.com.br>
@@ -39,9 +40,7 @@ class ObjectNormalizer
      */
     public function denormalize(array $data, $class = null)
     {
-        $class = $this->getIn('@class', $data, $class);
-
-        if (null === $class) {
+        if (null === $class = F\prop('@class', $data, $class)) {
             return;
         }
 
@@ -52,18 +51,17 @@ class ObjectNormalizer
         $object = $this->instantiator->instantiate($class);
         $properties = $this->metadataFactory->getPropertiesForClass($class);
 
-        return array_reduce($properties, function ($object, PropertyInfoInterface $property) use ($data) {
-            $reflProperty = new \ReflectionProperty($object, $property->getName());
+        return array_reduce($properties, function ($object, PropertyInfoInterface $prop) use ($data) {
+            $reflProperty = new \ReflectionProperty($object, $prop->getName());
             $reflProperty->setAccessible(true);
 
-            $class = $this->getIn('class', $property->getAnnotation(), false);
-            $attrs = $this->getIn($property->getDeclaringName(), $data, []);
+            $class = F\prop('class', $prop->getAnnotation(), false);
+            $attrs = F\curry(function ($prop, array $map, $default) {
+                return F\prop($prop, $map, $default);
+            }, $prop->getDeclaringName(), $data);
 
-            if ($property->getAnnotation() instanceof Collection) {
-                $reflProperty->setValue(
-                    $object,
-                    $this->nested($attrs, $class)
-                );
+            if ($prop->getAnnotation() instanceof Collection) {
+                $reflProperty->setValue($object, $this->nested($attrs([]), $class));
 
                 return $object;
             }
@@ -71,13 +69,13 @@ class ObjectNormalizer
             if ($class) {
                 $reflProperty->setValue(
                     $object,
-                    $this->denormalize(array_merge($attrs, ['@class' => $class]))
+                    $this->denormalize(array_merge($attrs([]), ['@class' => $class]))
                 );
 
                 return $object;
             }
 
-            $reflProperty->setValue($object, $attrs);
+            $reflProperty->setValue($object, $attrs(null));
 
             return $object;
         }, $object);
@@ -85,7 +83,7 @@ class ObjectNormalizer
 
     /**
      * @param string $class
-     * @param array  $data
+     * @param mixed  $data
      *
      * @return array
      */
@@ -94,23 +92,5 @@ class ObjectNormalizer
         return array_map(function (array $attrs) use ($class) {
             return $this->denormalize($attrs, $class);
         }, $data);
-    }
-
-    /**
-     * @param string     $prop
-     * @param mixed      $map
-     * @param mixed|null $default
-     *
-     * @return mixed
-     */
-    private function getIn($prop, $map, $default = null)
-    {
-        $map = (array) $map;
-
-        if (isset($map[$prop])) {
-            return $map[$prop];
-        }
-
-        return $default;
     }
 }

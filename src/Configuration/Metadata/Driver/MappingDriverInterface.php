@@ -12,5 +12,5 @@ interface MappingDriverInterface
      *
      * @return array
      */
-    public function loadMetadataForClass($className);
+    public function getPropertiesForClass($className);
 }

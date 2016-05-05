@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Sergiors\Mapping\Configuration\Metadata\ClassMetadataFactory;
 use Sergiors\Mapping\Configuration\Metadata\Driver\AnnotationDriver;
 use Sergiors\Mapping\Normalizer\ObjectNormalizer;
+use Sergiors\Mapping\Tests\Fixtures\Product;
 use Sergiors\Mapping\Tests\Fixtures\Attribute;
 use Sergiors\Mapping\Tests\Fixtures\Bar;
 use Sergiors\Mapping\Tests\Fixtures\Foo;
@@ -21,9 +22,30 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         $normalizer = $this->createNormalizer();
 
         $attrs = [
+            'buzz' => ['name' =>  'zzz'],
+            'attrs' => [
+                [
+                    'tag' => 'foo',
+                    'value' => [1, 2, 3, 4]
+                ],
+                [
+                    'tag' => 'bar'
+                ]
+            ]
+        ];
+        $expected = $normalizer->denormalize($attrs, Product::class);
+        $this->assertInstanceOf(Product::class, $expected);
+        $this->assertCount(2, $expected->attributes);
+        $this->assertInstanceOf(Attribute::class, $expected->attributes[0]);
+        $this->assertInstanceOf(Buzz::class, $expected->buzz);
+        $this->assertEquals('foo', $expected->attributes[0]->getName());
+        $this->assertEquals('bar', $expected->attributes[1]->getName());
+        $this->assertEquals('zzz', $expected->buzz->name);
+
+        $attrs = [
             'tag' => 'foo',
             'value' => [1, 2, 3, 4],
-            '@namespace' => Attribute::class,
+            '@class' => Attribute::class,
         ];
         $expected = $normalizer->denormalize($attrs);
 
@@ -45,11 +67,10 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
                 [
                     'name' => 'bar',
                 ],
-            ],
-            '@namespace' => Bar::class,
+            ]
         ];
 
-        $expected = $normalizer->denormalize($attrs);
+        $expected = $normalizer->denormalize($attrs, Bar::class);
         $this->assertInstanceOf(Bar::class, $expected);
         $this->assertInstanceOf(Foo::class, $expected->foo[0]);
         $this->assertInstanceOf(Buzz::class, $expected->foo[0]->buzz[0]);
@@ -66,7 +87,7 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         $normalizer = $this->createNormalizer();
 
         $normalizer->denormalize([
-            '@namespace' => 'Fake',
+            '@class' => 'Fake',
         ]);
     }
 

@@ -32,7 +32,7 @@ class ClassMetadataFactoryTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldReturnSome()
     {
-        $expected = $this->metadata->getMetadataForClass(Bar::class);
-        $this->assertEquals($expected, $this->metadata->getMetadataForClass(Bar::class));
+        $expected = $this->metadata->getPropertiesForClass(Bar::class);
+        $this->assertEquals($expected, $this->metadata->getPropertiesForClass(Bar::class));
     }
 }

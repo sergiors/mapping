@@ -32,69 +32,81 @@ class ObjectNormalizer
     }
 
     /**
-     * @param array $attrs
+     * @param array       $data
+     * @param string|null $class
      *
      * @return void|object
      */
-    public function denormalize(array $attrs)
+    public function denormalize(array $data, $class = null)
     {
-        if (false === $namespace = $this->getOrThen('@namespace', $attrs, false)) {
+        $class = $this->getIn('@class', $data, $class);
+
+        if (null === $class) {
             return;
         }
 
-        unset($attrs['@namespace']);
-
-        if (!class_exists($namespace)) {
-            throw new ClassDoesNotExistException(sprintf('Class %s does not exist', $namespace));
+        if (!class_exists($class)) {
+            throw new ClassDoesNotExistException(sprintf('Class %s does not exist', $class));
         }
 
-        $object = $this->instantiator->instantiate($namespace);
-        $props = $this->metadataFactory->getMetadataForClass($namespace);
+        $object = $this->instantiator->instantiate($class);
+        $properties = $this->metadataFactory->getPropertiesForClass($class);
 
-        return array_reduce($props, function ($object, PropertyInfoInterface $property) use ($attrs) {
+        return array_reduce($properties, function ($object, PropertyInfoInterface $property) use ($data) {
             $reflProperty = new \ReflectionProperty($object, $property->getName());
             $reflProperty->setAccessible(true);
 
+            $class = $this->getIn('class', $property->getAnnotation(), false);
+            $attrs = $this->getIn($property->getDeclaringName(), $data, []);
+
             if ($property->getAnnotation() instanceof Collection) {
-                $nested = $this->nested(
-                    $property->getAnnotation()->class,
-                    $this->getOrThen($property->getDeclaringName(), $attrs, [])
+                $reflProperty->setValue(
+                    $object,
+                    $this->nested($attrs, $class)
                 );
-                $reflProperty->setValue($object, $nested);
 
                 return $object;
             }
 
-            $reflProperty->setValue($object, $this->getOrThen($property->getDeclaringName(), $attrs));
+            if ($class) {
+                $reflProperty->setValue(
+                    $object,
+                    $this->denormalize(array_merge($attrs, ['@class' => $class]))
+                );
+
+                return $object;
+            }
+
+            $reflProperty->setValue($object, $attrs);
 
             return $object;
         }, $object);
     }
 
     /**
-     * @param string $namespace
-     * @param array  $attrs
+     * @param string $class
+     * @param array  $data
      *
      * @return array
      */
-    private function nested($namespace, array $attrs)
+    private function nested(array $data, $class)
     {
-        return array_map(function (array $attr) use ($namespace) {
-            $attr['@namespace'] = $namespace;
-
-            return $this->denormalize($attr);
-        }, $attrs);
+        return array_map(function (array $attrs) use ($class) {
+            return $this->denormalize($attrs, $class);
+        }, $data);
     }
 
     /**
      * @param string     $prop
-     * @param array      $map
+     * @param mixed      $map
      * @param mixed|null $default
      *
      * @return mixed
      */
-    private function getOrThen($prop, array $map, $default = null)
+    private function getIn($prop, $map, $default = null)
     {
+        $map = (array) $map;
+
         if (isset($map[$prop])) {
             return $map[$prop];
         }

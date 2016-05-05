@@ -33,17 +33,17 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getMetadataForClass($className)
+    public function getPropertiesForClass($className)
     {
         if (null === $this->cacheDriver) {
-            return $this->mappingDriver->loadMetadataForClass($className);
+            return $this->mappingDriver->getPropertiesForClass($className);
         }
 
         if ($this->cacheDriver->contains($className)) {
             return $this->cacheDriver->fetch($className);
         }
 
-        $this->cacheDriver->save($className, $data = $this->mappingDriver->loadMetadataForClass($className));
+        $this->cacheDriver->save($className, $data = $this->mappingDriver->getPropertiesForClass($className));
 
         return $data;
     }

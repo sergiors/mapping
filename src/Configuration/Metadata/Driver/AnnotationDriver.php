@@ -28,12 +28,13 @@ class AnnotationDriver implements MappingDriverInterface
     /**
      * {@inheritdoc}
      */
-    public function loadMetadataForClass($className)
+    public function getPropertiesForClass($className)
     {
         $reflClass = new \ReflectionClass($className);
         $reflProperties = $reflClass->getProperties();
 
         return array_reduce($reflProperties, function ($properties, \ReflectionProperty $reflProperty) {
+            /** @var Index $annotation */
             if ($annotation = $this->readerDriver->getPropertyAnnotation($reflProperty, Index::class)) {
                 $properties[] = new PropertyInfoMetadata(
                     $reflProperty->getName(),
@@ -42,12 +43,13 @@ class AnnotationDriver implements MappingDriverInterface
                 );
             }
 
+            /** @var Collection $annotation */
             if ($annotation = $this->readerDriver->getPropertyAnnotation($reflProperty, Collection::class)) {
                 $properties[] = new PropertyInfoMetadata(
                     $reflProperty->getName(),
                     $reflProperty->getDeclaringClass()->getName(),
                     $annotation,
-                    $this->loadMetadataForClass($annotation->class)
+                    $this->getPropertiesForClass($annotation->class)
                 );
             }
 

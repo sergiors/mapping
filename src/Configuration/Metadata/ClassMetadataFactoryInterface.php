@@ -12,5 +12,5 @@ interface ClassMetadataFactoryInterface
      *
      * @return array
      */
-    public function getMetadataForClass($className);
+    public function getPropertiesForClass($className);
 }

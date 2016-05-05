@@ -12,4 +12,9 @@ final class Index implements AnnotationInterface
      * @var string
      */
     public $name;
+
+    /**
+     * @var string
+     */
+    public $class;
 }

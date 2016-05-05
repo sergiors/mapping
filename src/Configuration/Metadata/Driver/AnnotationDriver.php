@@ -42,7 +42,7 @@ class AnnotationDriver implements MappingDriverInterface
                 );
             }
 
-            if ($annotation =  $this->readerDriver->getPropertyAnnotation($reflProperty, Collection::class)) {
+            if ($annotation = $this->readerDriver->getPropertyAnnotation($reflProperty, Collection::class)) {
                 $properties[] = new PropertyInfoMetadata(
                     $reflProperty->getName(),
                     $reflProperty->getDeclaringClass()->getName(),

@@ -5,7 +5,6 @@ namespace Sergiors\Mapping\Normalizer;
 use Doctrine\Instantiator\Instantiator;
 use Sergiors\Mapping\Configuration\Metadata\ClassMetadataFactoryInterface;
 use Sergiors\Mapping\Configuration\Metadata\PropertyInfoInterface;
-use Sergiors\Mapping\Configuration\Annotation\Index;
 use Sergiors\Mapping\Configuration\Annotation\Collection;
 
 /**
@@ -66,9 +65,7 @@ class ObjectNormalizer
                 return $object;
             }
 
-            if ($property->getAnnotation() instanceof Index) {
-                $reflProperty->setValue($object, $this->getOrThen($property->getDeclaringName(), $attrs, null));
-            }
+            $reflProperty->setValue($object, $this->getOrThen($property->getDeclaringName(), $attrs));
 
             return $object;
         }, $object);
@@ -84,20 +81,21 @@ class ObjectNormalizer
     {
         return array_map(function (array $attr) use ($namespace) {
             $attr['@namespace'] = $namespace;
+
             return $this->denormalize($attr);
         }, $attrs);
     }
 
     /**
-     * @param string $prop
-     * @param array  $map
-     * @param null   $default
+     * @param string     $prop
+     * @param array      $map
+     * @param mixed|null $default
      *
      * @return mixed
      */
     private function getOrThen($prop, array $map, $default = null)
     {
-        if (array_key_exists($prop, $map)) {
+        if (isset($map[$prop])) {
             return $map[$prop];
         }
 

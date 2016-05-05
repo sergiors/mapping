@@ -12,6 +12,7 @@
         "doctrine/annotations": "^1.2"
     },
     "require-dev": {
+        "doctrine/cache": "^1.6",
         "phpunit/phpunit": "^4.8",
         "pdepend/pdepend": "~2.0",
         "phing/phing": "~2.10",

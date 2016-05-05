@@ -2,17 +2,17 @@
 
 namespace Sergiors\Mapping\Tests\Fixtures;
 
-use Sergiors\Mapping\Configuration\Annotation\Index;
+use Sergiors\Mapping\Configuration\Annotation as Mapping;
 
 class Attribute
 {
     /**
-     * @Index(name="tag")
+     * @Mapping\Index(name="tag")
      */
     private $name;
 
     /**
-     * @Index
+     * @Mapping\Index
      */
     private $value;
 

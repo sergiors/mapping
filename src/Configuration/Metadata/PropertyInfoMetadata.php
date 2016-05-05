@@ -7,7 +7,7 @@ use Sergiors\Mapping\Configuration\Annotation\AnnotationInterface;
 /**
  * @author Sérgio Rafael Siqueira <sergio@inbep.com.br>
  */
-class PropertyInfoMetadata implements PropertyInfoInterface
+class PropertyInfoMetadata implements PropertyInfoInterface, \Serializable
 {
     /**
      * @var string
@@ -85,5 +85,31 @@ class PropertyInfoMetadata implements PropertyInfoInterface
     public function getNestedProperty()
     {
         return $this->nestedProperty;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function serialize()
+    {
+        return serialize([
+            $this->name,
+            $this->declaringClass,
+            $this->annotation,
+            $this->nestedProperty
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unserialize($serialized)
+    {
+        list(
+            $this->name,
+            $this->declaringClass,
+            $this->annotation,
+            $this->nestedProperty
+        ) = unserialize($serialized);
     }
 }

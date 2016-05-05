@@ -2,6 +2,7 @@
 
 namespace Sergiors\Mapping\Configuration\Metadata;
 
+use Doctrine\Common\Cache\Cache;
 use Sergiors\Mapping\Configuration\Metadata\Driver\MappingDriverInterface;
 
 /**
@@ -15,11 +16,18 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
     private $mappingDriver;
 
     /**
-     * @param MappingDriverInterface $mappingDriver
+     * @var Cache
      */
-    public function __construct(MappingDriverInterface $mappingDriver)
+    private $cacheDriver;
+
+    /**
+     * @param MappingDriverInterface $mappingDriver
+     * @param Cache|null             $cacheDriver
+     */
+    public function __construct(MappingDriverInterface $mappingDriver, Cache $cacheDriver = null)
     {
         $this->mappingDriver = $mappingDriver;
+        $this->cacheDriver = $cacheDriver;
     }
 
     /**
@@ -27,6 +35,16 @@ class ClassMetadataFactory implements ClassMetadataFactoryInterface
      */
     public function getMetadataForClass($className)
     {
-        return $this->mappingDriver->loadMetadataForClass($className);
+        if (null === $this->cacheDriver) {
+            return $this->mappingDriver->loadMetadataForClass($className);
+        }
+
+        if ($this->cacheDriver->contains($className)) {
+            return $this->cacheDriver->fetch($className);
+        }
+
+        $this->cacheDriver->save($className, $data = $this->mappingDriver->loadMetadataForClass($className));
+
+        return $data;
     }
 }

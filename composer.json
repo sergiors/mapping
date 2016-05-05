@@ -1,0 +1,33 @@
+{
+    "name": "sergiors/mapping",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sérgio Rafael Siqueira",
+            "email": "sergio@inbep.com.br"
+        }
+    ],
+    "require": {
+        "php": "^5.5|^7.0",
+        "doctrine/annotations": "^1.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8",
+        "pdepend/pdepend": "~2.0",
+        "phing/phing": "~2.10",
+        "phploc/phploc": "~2.1",
+        "phpmd/phpmd": "~2.2",
+        "sebastian/phpcpd": "~2.0",
+        "squizlabs/php_codesniffer": "~2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sergiors\\Mapping\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sergiors\\Mapping\\Tests\\": "tests"
+        }
+    }
+}

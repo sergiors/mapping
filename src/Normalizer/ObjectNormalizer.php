@@ -49,16 +49,17 @@ class ObjectNormalizer
         }
 
         $object = $this->instantiator->instantiate($class);
-        $properties = $this->metadataFactory->getPropertiesForClass($class);
+        $props = $this->metadataFactory->getPropertiesForClass($class);
+        $attrsFn = F\curry(function ($attrs, $name, $default) {
+            return F\get($attrs, $name, $default);
+        }, $data);
 
-        return array_reduce($properties, function ($object, PropertyInfoInterface $prop) use ($data) {
+        return array_reduce($props, function ($object, PropertyInfoInterface $prop) use ($attrsFn) {
             $reflProperty = new \ReflectionProperty($object, $prop->getName());
             $reflProperty->setAccessible(true);
 
             $class = F\prop('class', $prop->getAnnotation());
-            $attrs = F\curry(function ($key, array $map, $default) {
-                return F\get($map, $key, $default);
-            }, $prop->getDeclaringName(), $data);
+            $attrs = $attrsFn($prop->getDeclaringName());
 
             if ($prop->getAnnotation() instanceof Collection) {
                 $reflProperty->setValue(

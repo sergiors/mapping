@@ -40,7 +40,7 @@ class ObjectNormalizer
      */
     public function denormalize(array $data, $class = null)
     {
-        if (null === $class = F\prop('@class', $data, $class)) {
+        if (null === $class = F\get($data, '@class', $class)) {
             return;
         }
 
@@ -55,13 +55,16 @@ class ObjectNormalizer
             $reflProperty = new \ReflectionProperty($object, $prop->getName());
             $reflProperty->setAccessible(true);
 
-            $class = F\prop('class', $prop->getAnnotation(), false);
-            $attrs = F\curry(function ($prop, array $map, $default) {
-                return F\prop($prop, $map, $default);
+            $class = F\prop('class', $prop->getAnnotation());
+            $attrs = F\curry(function ($key, array $map, $default) {
+                return F\get($map, $key, $default);
             }, $prop->getDeclaringName(), $data);
 
             if ($prop->getAnnotation() instanceof Collection) {
-                $reflProperty->setValue($object, $this->nested($attrs([]), $class));
+                $reflProperty->setValue(
+                    $object,
+                    $this->nested($attrs([]), $class)
+                );
 
                 return $object;
             }

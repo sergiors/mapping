@@ -73,7 +73,7 @@ class ObjectNormalizer
             if ($class) {
                 $reflProperty->setValue(
                     $object,
-                    $this->denormalize(array_merge($attrs([]), ['@class' => $class]))
+                    $this->denormalize($attrs([]), $class)
                 );
 
                 return $object;

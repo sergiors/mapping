@@ -61,12 +61,12 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
                     'buzz' => [
                         [
                             'name' => 'zzz',
-                        ],
-                    ],
+                        ]
+                    ]
                 ],
                 [
                     'name' => 'bar',
-                ],
+                ]
             ]
         ];
 

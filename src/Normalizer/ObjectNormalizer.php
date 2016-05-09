@@ -50,7 +50,7 @@ class ObjectNormalizer
 
         $object = $this->instantiator->instantiate($class);
         $props = $this->metadataFactory->getPropertiesForClass($class);
-        $attrsFn = F\curry(function ($attrs, $name, $default) {
+        $attrsFn = F\partial(function ($attrs, $name, $default) {
             return F\get($attrs, $name, $default);
         }, $data);
 

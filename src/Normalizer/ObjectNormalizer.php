@@ -58,8 +58,8 @@ class ObjectNormalizer
             $reflProperty = new \ReflectionProperty($object, $prop->getName());
             $reflProperty->setAccessible(true);
 
-            $class = F\prop('class', $prop->getAnnotation());
             $attrs = $attrsFn($prop->getDeclaringName());
+            $class = F\get($attrs([]), '@class', F\prop('class', $prop->getAnnotation()));
 
             if ($prop->getAnnotation() instanceof Collection) {
                 $reflProperty->setValue(

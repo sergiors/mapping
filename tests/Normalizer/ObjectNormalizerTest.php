@@ -81,6 +81,32 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function shouldReturnCollectionDiffObjects()
+    {
+        $normalizer = $this->createNormalizer();
+        $attrs = [
+            'uuid' => 1,
+            'foo' => [
+                [
+                    'tag' => 'baz',
+                    'value' => 'baz x',
+                    '@class' => Attribute::class
+                ],
+                [
+                    'name' => 'buzz',
+                    '@class' => Buzz::class
+                ]
+            ],
+            '@class' => Bar::class
+        ];
+        $bar = $normalizer->denormalize($attrs);
+
+        var_dump($bar);
+    }
+
+    /**
+     * @test
+     */
     public function shouldReturnObjectWithNullProps()
     {
         $normalizer = $this->createNormalizer();

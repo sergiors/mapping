@@ -14,8 +14,6 @@ final class Collection implements AnnotationInterface
     public $name;
 
     /**
-     * @Required
-     *
      * @var string
      */
     public $class;

@@ -101,7 +101,9 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         ];
         $bar = $normalizer->denormalize($attrs);
 
-        var_dump($bar);
+        $this->assertInstanceOf(Bar::class, $bar);
+        $this->assertInstanceOf(Attribute::class, $bar->foo[0]);
+        $this->assertInstanceOf(Buzz::class, $bar->foo[1]);
     }
 
     /**

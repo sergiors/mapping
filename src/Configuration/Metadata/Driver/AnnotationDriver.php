@@ -3,8 +3,7 @@
 namespace Sergiors\Mapping\Configuration\Metadata\Driver;
 
 use Doctrine\Common\Annotations\Reader;
-use Sergiors\Mapping\Configuration\Annotation\Index;
-use Sergiors\Mapping\Configuration\Annotation\Collection;
+use Sergiors\Mapping\Configuration\Annotation\Mapping;
 use Sergiors\Mapping\Configuration\Metadata\PropertyInfoMetadata;
 
 /**
@@ -30,26 +29,21 @@ class AnnotationDriver implements MappingDriverInterface
      */
     public function getPropertiesForClass($className)
     {
+        if (!class_exists($className)) {
+            return [];
+        }
+
         $reflClass = new \ReflectionClass($className);
         $reflProperties = $reflClass->getProperties();
 
         return array_reduce($reflProperties, function ($properties, \ReflectionProperty $reflProperty) {
-            /** @var Index $annotation */
-            if ($annotation = $this->readerDriver->getPropertyAnnotation($reflProperty, Index::class)) {
+            /** @var Mapping $mapping */
+            if ($mapping = $this->readerDriver->getPropertyAnnotation($reflProperty, Mapping::class)) {
                 $properties[] = new PropertyInfoMetadata(
                     $reflProperty->getName(),
                     $reflProperty->getDeclaringClass()->getName(),
-                    $annotation
-                );
-            }
-
-            /** @var Collection $annotation */
-            if ($annotation = $this->readerDriver->getPropertyAnnotation($reflProperty, Collection::class)) {
-                $properties[] = new PropertyInfoMetadata(
-                    $reflProperty->getName(),
-                    $reflProperty->getDeclaringClass()->getName(),
-                    $annotation,
-                    $this->getPropertiesForClass($annotation->class)
+                    $mapping,
+                    $this->getPropertiesForClass($mapping->class)
                 );
             }
 

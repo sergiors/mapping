@@ -2,12 +2,12 @@
 
 namespace Sergiors\Mapping\Tests\Fixtures;
 
-use Sergiors\Mapping\Configuration\Annotation as Mapping;
+use Sergiors\Mapping\Configuration\Annotation\Mapping;
 
 class Buzz
 {
     /**
-     * @Mapping\Index
+     * @Mapping
      */
     public $name;
 }

@@ -2,22 +2,22 @@
 
 namespace Sergiors\Mapping\Tests\Fixtures;
 
-use Sergiors\Mapping\Configuration\Annotation as Mapping;
+use Sergiors\Mapping\Configuration\Annotation\Mapping;
 
 class Foo
 {
     /**
-     * @Mapping\Index(name="id")
+     * @Mapping(name="id")
      */
     public $name;
 
     /**
-     * @Mapping\Index
+     * @Mapping
      */
     public $label;
 
     /**
-     * @Mapping\Collection(class="Sergiors\Mapping\Tests\Fixtures\Buzz")
+     * @Mapping(class="Sergiors\Mapping\Tests\Fixtures\Buzz")
      */
     public $buzz;
 }

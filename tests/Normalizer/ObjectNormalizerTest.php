@@ -48,7 +48,6 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
             '@class' => Attribute::class,
         ];
         $expected = $normalizer->denormalize($attrs);
-
         $this->assertInstanceOf(Attribute::class, $expected);
         $this->assertEquals($attrs['tag'], $expected->getName());
         $this->assertEquals($attrs['value'], $expected->getValue());

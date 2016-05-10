@@ -58,28 +58,21 @@ class ObjectNormalizer
             $reflProperty = new \ReflectionProperty($object, $prop->getName());
             $reflProperty->setAccessible(true);
 
-            $attrs = $attrsFn($prop->getDeclaringName());
-            $class = F\get($attrs([]), '@class', F\prop('class', $prop->getAnnotation()));
-
-            if ($prop->getAnnotation() instanceof Collection) {
-                $reflProperty->setValue(
-                    $object,
-                    $this->nested($attrs([]), $class)
-                );
-
-                return $object;
-            }
+            $attrs = $attrsFn($prop->getDeclaringName(), []);
+            $class = F\get($attrs, '@class', F\prop('class', $prop->getAnnotation()));
 
             if ($class) {
                 $reflProperty->setValue(
                     $object,
-                    $this->denormalize($attrs([]), $class)
+                    array_key_exists(0, $attrs)
+                        ? $this->nested($attrs, $class)
+                        : $this->denormalize($attrs, $class)
                 );
 
                 return $object;
             }
 
-            $reflProperty->setValue($object, $attrs(null));
+            $reflProperty->setValue($object, $attrsFn($prop->getDeclaringName(), null));
 
             return $object;
         }, $object);

@@ -2,17 +2,17 @@
 
 namespace Sergiors\Mapping\Tests\Fixtures;
 
-use Sergiors\Mapping\Configuration\Annotation as Mapping;
+use Sergiors\Mapping\Configuration\Annotation\Mapping;
 
 class Bar
 {
     /**
-     * @Mapping\Index(name="uuid")
+     * @Mapping(name="uuid")
      */
     public $id;
 
     /**
-     * @Mapping\Collection(class="Sergiors\Mapping\Tests\Fixtures\Foo")
+     * @Mapping(class="Sergiors\Mapping\Tests\Fixtures\Foo")
      */
     public $foo;
 }

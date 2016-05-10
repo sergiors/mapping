@@ -6,7 +6,7 @@ namespace Sergiors\Mapping\Configuration\Annotation;
  * @Annotation
  * @Target("PROPERTY")
  */
-final class Index implements AnnotationInterface
+final class Mapping implements AnnotationInterface
 {
     /**
      * @var string

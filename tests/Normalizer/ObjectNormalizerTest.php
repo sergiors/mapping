@@ -100,7 +100,6 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         ];
         $expected = $normalizer->denormalize($attrs);
 
-
         $this->assertInstanceOf(Bar::class, $expected[0]);
         $this->assertEquals(1, $expected[0]->id);
         $this->assertInstanceOf(Attribute::class, $expected[0]->foo[0]);
@@ -123,6 +122,23 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         $expected = $normalizer->denormalize($attrs, Foo::class);
         $this->assertInstanceOf(Foo::class, $expected[0]);
         $this->assertInstanceOf(Buzz::class, $expected[0]->buzz);
+
+        $attrs = [
+            'attrs' => [
+                [
+                    'tag' => 'foo'
+                ]
+            ],
+        ];
+
+        $product = $normalizer->denormalize($attrs, Product::class);
+        $this->assertInstanceOf(Attribute::class, $product->attributes[0]);
+
+        $attrs = [
+            '@class' => Product::class
+        ];
+        $product = $normalizer->denormalize($attrs);
+        $this->assertInstanceOf(Product::class, $product);
     }
 
     /**
@@ -134,9 +150,7 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         $normalizer = $this->createNormalizer();
 
         $normalizer->denormalize([
-            [
-                '@class' => 'Fake',
-            ]
+            '@class' => 'Fake',
         ]);
     }
 

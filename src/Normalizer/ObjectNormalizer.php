@@ -43,6 +43,10 @@ class ObjectNormalizer
             return;
         }
 
+        if (!array_key_exists(0, $attrs)) {
+            return $this->nested($attrs, F\get($attrs, '@class', $class));
+        }
+
         return array_map(function ($attrs) use ($class) {
             if ($class = F\get($attrs, '@class', $class)) {
                 unset($attrs['@class']);
@@ -78,7 +82,7 @@ class ObjectNormalizer
             $attrs = F\get($attrs, $prop->getDeclaringName(), null);
             $class = F\get($attrs, '@class', F\prop('class', $prop->getAnnotation()));
 
-            if ($class) {
+            if ($class && is_array($attrs)) {
                 $reflProperty->setValue(
                     $object,
                     array_key_exists(0, $attrs)

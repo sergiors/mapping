@@ -5,7 +5,6 @@ namespace Sergiors\Mapping\Normalizer;
 use Doctrine\Instantiator\Instantiator;
 use Sergiors\Mapping\Configuration\Metadata\ClassMetadataFactoryInterface;
 use Sergiors\Mapping\Configuration\Metadata\PropertyInfoInterface;
-use Sergiors\Mapping\Configuration\Annotation\Collection;
 use Sergiors\Functional as F;
 
 /**
@@ -33,61 +32,66 @@ class ObjectNormalizer
     }
 
     /**
-     * @param array       $data
+     * @param array       $attrs
      * @param string|null $class
      *
-     * @return void|object
+     * @return array
      */
-    public function denormalize(array $data, $class = null)
+    public function denormalize(array $attrs, $class = null)
     {
-        if (null === $class = F\get($data, '@class', $class)) {
+        if ([] === $attrs) {
             return;
         }
 
+        return array_map(function ($attrs) use ($class) {
+            if ($class = F\get($attrs, '@class', $class)) {
+                unset($attrs['@class']);
+            }
+
+            if (array_key_exists(0, $attrs)) {
+                return $this->denormalize($attrs, $class);
+            }
+
+            return $this->nested($attrs, $class);
+        }, $attrs);
+    }
+
+    /**
+     * @param array  $attrs
+     * @param string $class
+     *
+     * @return mixed
+     */
+    private function nested(array $attrs, $class)
+    {
         if (!class_exists($class)) {
             throw new ClassDoesNotExistException(sprintf('Class %s does not exist', $class));
         }
 
         $object = $this->instantiator->instantiate($class);
         $props = $this->metadataFactory->getPropertiesForClass($class);
-        $attrsFn = F\partial(function ($attrs, $name, $default) {
-            return F\get($attrs, $name, $default);
-        }, $data);
 
-        return array_reduce($props, function ($object, PropertyInfoInterface $prop) use ($attrsFn) {
+        return array_reduce($props, function ($object, PropertyInfoInterface $prop) use ($attrs) {
             $reflProperty = new \ReflectionProperty($object, $prop->getName());
             $reflProperty->setAccessible(true);
 
-            $attrs = $attrsFn($prop->getDeclaringName(), []);
+            $attrs = F\get($attrs, $prop->getDeclaringName(), null);
             $class = F\get($attrs, '@class', F\prop('class', $prop->getAnnotation()));
 
             if ($class) {
                 $reflProperty->setValue(
                     $object,
                     array_key_exists(0, $attrs)
-                        ? $this->nested($attrs, $class)
-                        : $this->denormalize($attrs, $class)
+                        ? $this->denormalize($attrs, $class)
+                        : $this->nested($attrs, $class)
                 );
 
                 return $object;
             }
 
-            $reflProperty->setValue($object, $attrsFn($prop->getDeclaringName(), null));
+            $reflProperty->setValue($object, $attrs);
 
             return $object;
         }, $object);
-    }
-
-    /**
-     * @param string $class
-     * @param mixed  $data
-     *
-     * @return array
-     */
-    private function nested(array $data, $class)
-    {
-        return array_map(function (array $attrs) use ($class) {
-            return $this->denormalize($attrs, $class);
-        }, $data);
     }
 }

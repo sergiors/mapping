@@ -22,59 +22,57 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         $normalizer = $this->createNormalizer();
 
         $attrs = [
-            'buzz' => ['name' =>  'zzz'],
-            'attrs' => [
+            [
+                'name' => 'zzz',
+                '@class' => Buzz::class
+            ],
+            [
                 [
                     'tag' => 'foo',
                     'value' => [1, 2, 3, 4]
                 ],
                 [
-                    'tag' => 'bar'
-                ]
+                    'tag' => 'bar zzz'
+                ],
+                '@class' => Attribute::class
             ]
-        ];
-        $expected = $normalizer->denormalize($attrs, Product::class);
-        $this->assertInstanceOf(Product::class, $expected);
-        $this->assertCount(2, $expected->attributes);
-        $this->assertInstanceOf(Attribute::class, $expected->attributes[0]);
-        $this->assertInstanceOf(Buzz::class, $expected->buzz);
-        $this->assertEquals('foo', $expected->attributes[0]->getName());
-        $this->assertEquals('bar', $expected->attributes[1]->getName());
-        $this->assertEquals('zzz', $expected->buzz->name);
-
-        $attrs = [
-            'tag' => 'foo',
-            'value' => [1, 2, 3, 4],
-            '@class' => Attribute::class,
         ];
         $expected = $normalizer->denormalize($attrs);
-        $this->assertInstanceOf(Attribute::class, $expected);
-        $this->assertEquals($attrs['tag'], $expected->getName());
-        $this->assertEquals($attrs['value'], $expected->getValue());
+        $this->assertCount(2, $expected);
+        $this->assertInstanceOf(Buzz::class, $expected[0]);
+        $this->assertEquals('zzz', $expected[0]->name);
+        $this->assertEquals('foo', $expected[1][0]->getName());
+        $this->assertEquals([1, 2, 3, 4], $expected[1][0]->getValue());
 
         $attrs = [
-            'uuid' => 10,
-            'foo' => [
+            [
                 [
-                    'name' => 'foo',
-                    'buzz' => [
-                        [
-                            'name' => 'zzz',
-                        ]
-                    ]
+                    'tag' => 'foo',
+                    'value' => [1, 2, 3, 4],
+                    '@class' => Attribute::class
                 ],
                 [
-                    'name' => 'bar',
-                ]
+                    'tag' => 'bar',
+                    'value' => 'foo',
+                    '@class' => Attribute::class
+                ],
             ]
         ];
+        $expected = $normalizer->denormalize($attrs);
+        $this->assertCount(1, $expected);
+        $this->assertInstanceOf(Attribute::class, $expected[0][0]);
+        $this->assertInstanceOf(Attribute::class, $expected[0][1]);
 
-        $expected = $normalizer->denormalize($attrs, Bar::class);
-        $this->assertInstanceOf(Bar::class, $expected);
-        $this->assertInstanceOf(Foo::class, $expected->foo[0]);
-        $this->assertInstanceOf(Buzz::class, $expected->foo[0]->buzz[0]);
-        $this->assertCount(2, $expected->foo);
-        $this->assertEquals(10, $expected->id);
+        $attrs = [
+            [
+                'tag' => 'foo',
+                'value' => [1, 2, 3, 4],
+            ]
+        ];
+        $expected = $normalizer->denormalize($attrs, Attribute::class);
+        $this->assertInstanceOf(Attribute::class, $expected[0]);
+        $this->assertEquals($attrs[0]['tag'], $expected[0]->getName());
+        $this->assertEquals($attrs[0]['value'], $expected[0]->getValue());
     }
 
     /**
@@ -84,37 +82,47 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
     {
         $normalizer = $this->createNormalizer();
         $attrs = [
-            'uuid' => 1,
-            'foo' => [
-                [
-                    'tag' => 'baz',
-                    'value' => 'baz x',
-                    '@class' => Attribute::class
+            [
+                'uuid' => 1,
+                'foo' => [
+                    [
+                        'tag' => 'baz',
+                        'value' => 'baz x',
+                        '@class' => Attribute::class
+                    ],
+                    [
+                        'name' => 'buzz',
+                        '@class' => Buzz::class
+                    ]
                 ],
-                [
-                    'name' => 'buzz',
-                    '@class' => Buzz::class
-                ]
-            ],
-            '@class' => Bar::class
+                '@class' => Bar::class
+            ]
         ];
-        $bar = $normalizer->denormalize($attrs);
+        $expected = $normalizer->denormalize($attrs);
 
-        $this->assertInstanceOf(Bar::class, $bar);
-        $this->assertInstanceOf(Attribute::class, $bar->foo[0]);
-        $this->assertInstanceOf(Buzz::class, $bar->foo[1]);
+
+        $this->assertInstanceOf(Bar::class, $expected[0]);
+        $this->assertEquals(1, $expected[0]->id);
+        $this->assertInstanceOf(Attribute::class, $expected[0]->foo[0]);
+        $this->assertInstanceOf(Buzz::class, $expected[0]->foo[1]);
     }
 
     /**
      * @test
      */
-    public function shouldReturnObjectWithNullProps()
+    public function shouldReturnNestedObjectAnnotation()
     {
         $normalizer = $this->createNormalizer();
-
-        $expected = $normalizer->denormalize([], Product::class);
-        $this->assertInstanceOf(Buzz::class, $expected->buzz);
-        $this->assertNull($expected->buzz->name);
+        $attrs = [
+            [
+                'buzz' => [
+                    'name' => 'zzz'
+                ]
+            ]
+        ];
+        $expected = $normalizer->denormalize($attrs, Foo::class);
+        $this->assertInstanceOf(Foo::class, $expected[0]);
+        $this->assertInstanceOf(Buzz::class, $expected[0]->buzz);
     }
 
     /**
@@ -126,7 +134,9 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
         $normalizer = $this->createNormalizer();
 
         $normalizer->denormalize([
-            '@class' => 'Fake',
+            [
+                '@class' => 'Fake',
+            ]
         ]);
     }
 
@@ -136,9 +146,7 @@ class ObjectNormalizerTest extends \PHPUnit_Framework_TestCase
     public function shouldReturnVoid()
     {
         $normalizer = $this->createNormalizer();
-
-        $expected = $normalizer->denormalize([]);
-        $this->assertEquals(null, $expected);
+        $this->assertNull($normalizer->denormalize([]));
     }
 
     private function createNormalizer()

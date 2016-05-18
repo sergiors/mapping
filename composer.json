@@ -25,7 +25,10 @@
     "autoload": {
         "psr-4": {
             "Sergiors\\Mapping\\": "src"
-        }
+        },
+        "files": [
+            "src/array_multi_exists.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

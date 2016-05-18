@@ -5,6 +5,7 @@ namespace Sergiors\Mapping\Normalizer;
 use Doctrine\Instantiator\Instantiator;
 use Sergiors\Mapping\Configuration\Metadata\ClassMetadataFactoryInterface;
 use Sergiors\Mapping\Configuration\Metadata\PropertyInfoInterface;
+use Sergiors\Mapping;
 use Sergiors\Functional as F;
 
 /**
@@ -43,7 +44,7 @@ class ObjectNormalizer
             return;
         }
 
-        if (!array_key_exists(0, $attrs)) {
+        if (!F\prop(0, $attrs)) {
             return $this->nested($attrs, F\get($attrs, '@class', $class));
         }
 
@@ -52,7 +53,7 @@ class ObjectNormalizer
                 unset($attrs['@class']);
             }
 
-            if (array_key_exists(0, $attrs)) {
+            if (Mapping\array_multi_exists($attrs)) {
                 return $this->denormalize($attrs, $class);
             }
 
@@ -85,7 +86,7 @@ class ObjectNormalizer
             if ($class && is_array($attrs)) {
                 $reflProperty->setValue(
                     $object,
-                    array_key_exists(0, $attrs)
+                    Mapping\array_multi_exists($attrs)
                         ? $this->denormalize($attrs, $class)
                         : $this->nested($attrs, $class)
                 );
